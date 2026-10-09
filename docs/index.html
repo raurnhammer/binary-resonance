@@ -361,6 +361,10 @@
             hardCutoffPct: 0.5
         };
 
+        // Seed from URL, e.g. index.html?seed=1234
+        let urlSeed = parseInt(new URLSearchParams(window.location.search).get('seed'));
+        if (urlSeed > 0) params.seed = urlSeed;
+
         let defaultParams = {...params};
         let gridCells = [];       // Each cell stores row, col, diagonal type
 
@@ -496,6 +500,7 @@
         // ─── P5.JS SETUP & DRAW ──────────────────
 
         function setup() {
+            document.getElementById('seed-input').value = params.seed;
             let canvas = createCanvas(800, 800);
             canvas.parent('canvas-container');
             initializeSystem();
@@ -503,6 +508,7 @@
         }
 
         function initializeSystem() {
+            syncSeedToUrl();
             randomSeed(params.seed);
             noiseSeed(params.seed);
 
@@ -517,6 +523,12 @@
         }
 
         // ─── UI HANDLERS ──────────────────────────
+
+        function syncSeedToUrl() {
+            let url = new URL(window.location.href);
+            url.searchParams.set('seed', params.seed);
+            history.replaceState(null, '', url);
+        }
 
         function updateParam(paramName, value) {
             // Handle checkbox values
@@ -561,7 +573,7 @@
         }
 
         function resetParameters() {
-            params = {...defaultParams};
+            params = {...defaultParams, seed: params.seed};
             const sliders = ['gridRows', 'gridCols', 'noiseScale', 'noiseScale2', 'strokeWeight', 'falloffExponent', 'hardCutoffPct'];
             for (let s of sliders) {
                 document.getElementById(s).value = params[s];
